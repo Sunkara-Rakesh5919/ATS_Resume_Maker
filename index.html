@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Builder - Score 85+</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-file-alt"></i> ATS Resume Builder</h1>
+                <span class="header-subtitle">Score 85+ on ATS Systems</span>
+            </div>
+            <div class="header-right">
+                <div class="progress-indicator">
+                    <span id="progressText">Resume 0% Complete</span>
+                </div>
+                <button class="btn btn-secondary" id="loadBtn" title="Load Previous Resume">
+                    <i class="fas fa-folder-open"></i> Load Previous
+                </button>
+                <button class="btn btn-secondary" id="fillSampleBtn" title="Fill with Sample Data">
+                    <i class="fas fa-magic"></i> Sample Data
+                </button>
+                <button class="btn btn-warning" id="clearBtn" title="Clear Form">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+                <button class="btn btn-primary" id="downloadPdfBtn" title="Download as PDF">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-primary" id="downloadDocxBtn" title="Download as DOCX">
+                    <i class="fas fa-file-word"></i> DOCX
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="form-section">
+            <div class="tips-panel" id="tipsPanel">
+                <div class="tips-header" onclick="toggleTips()">
+                    <h3><i class="fas fa-lightbulb"></i> ATS Optimization Tips</h3>
+                    <i class="fas fa-chevron-down" id="tipsChevron"></i>
+                </div>
+                <div class="tips-content" id="tipsContent">
+                    <ul>
+                        <li><i class="fas fa-check"></i> Use keywords from job description</li>
+                        <li><i class="fas fa-check"></i> Quantify achievements with numbers</li>
+                        <li><i class="fas fa-check"></i> Use action verbs (Developed, Implemented, Managed)</li>
+                        <li><i class="fas fa-check"></i> Keep format simple and clean</li>
+                        <li><i class="fas fa-check"></i> Include full terms with acronyms (e.g., API - Application Programming Interface)</li>
+                        <li><i class="fas fa-check"></i> Target ATS score: 85+</li>
+                    </ul>
+                    <button class="btn btn-sm btn-secondary" onclick="showKeywords()">View Keyword Suggestions</button>
+                </div>
+            </div>
+
+            <form id="resumeForm" class="resume-form">
+                <!-- Contact Information -->
+                <div class="form-section-block">
+                    <div class="section-header" onclick="toggleSection('contact')">
+                        <h2><i class="fas fa-user"></i> Contact Information</h2>
+                        <i class="fas fa-chevron-down section-toggle" id="contactToggle"></i>
+                    </div>
+                    <div class="section-content" id="contactContent">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name <span class="required">*</span></label>
+                                <input type="text" id="fullName" class="form-control" placeholder="John Doe" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Email Address <span class="required">*</span></label>
+                                <input type="email" id="email" class="form-control" placeholder="john.doe@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number <span class="required">*</span></label>
+                                <input type="tel" id="phone" class="form-control" placeholder="(555) 123-4567" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Location <span class="required">*</span></label>
+                                <input type="text" id="location" class="form-control" placeholder="San Francisco, CA" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">LinkedIn Profile URL</label>
+                                <input type="url" id="linkedin" class="form-control" placeholder="linkedin.com/in/johndoe">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Portfolio/GitHub URL</label>
+                                <input type="url" id="portfolio" class="form-control" placeholder="github.com/johndoe">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Summary -->
+                <div class="form-section-block">
+                    <div class="section-header" onclick="toggleSection('summary')">
+                        <h2><i class="fas fa-align-left"></i> Professional Summary</h2>
+                        <i class="fas fa-chevron-down section-toggle" id="summaryToggle"></i>
+                    </div>
+                    <div class="section-content" id="summaryContent">
+                        <div class="form-group">
+                            <label class="form-label">Professional Summary <span class="helper-text">(2-4 sentences)</span></label>
+                            <textarea id="summary" class="form-control" rows="4" maxlength="500" placeholder="Highlight your key achievements, skills, and career goals..."></textarea>
+                            <div class="char-counter"><span id="summaryCount">0</span>/500 characters</div>
+                            <button type="button" class="btn btn-sm btn-secondary ai-suggest-btn" onclick="suggestImprovement('summary')">
+                                <i class="fas fa-magic"></i> AI Suggest
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Experience -->
+                <div class="form-section-block">
+                    <div class="section-header" onclick="toggleSection('experience')">
+                        <h2><i class="fas fa-briefcase"></i> Work Experience</h2>
+                        <i class="fas fa-chevron-down section-toggle" id="experienceToggle"></i>
+                    </div>
+                    <div class="section-content" id="experienceContent">
+                        <div id="experienceList"></div>
+                        <button type="button" class="btn btn-secondary btn-add" onclick="addExperience()">
+                            <i class="fas fa-plus"></i> Add Work Experience
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="form-section-block">
+                    <div class="section-header" onclick="toggleSection('education')">
+                        <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                        <i class="fas fa-chevron-down section-toggle" id="educationToggle"></i>
+                    </div>
+                    <div class="section-content" id="educationContent">
+                        <div id="educationList"></div>
+                        <button type="button" class="btn btn-secondary btn-add" onclick="addEducation()">
+                            <i class="fas fa-plus"></i> Add Education
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="form-section-block">
+                    <div class="section-header" onclick="toggleSection('skills')">
+                        <h2><i class="fas fa-code"></i> Skills</h2>
+                        <i class="fas fa-chevron-down section-toggle" id="skillsToggle"></i>
+                    </div>
+                    <div class="section-content" id="skillsContent">
+                        <div class="form-group">
+                            <label class="form-label">Technical Skills</label>
+                            <input type="text" id="technicalSkills" class="form-control" placeholder="JavaScript, Python, React, Node.js, AWS (comma-separated)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Soft Skills</label>
+                            <input type="text" id="softSkills" class="form-control" placeholder="Team Leadership, Communication, Problem Solving (comma-separated)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Certifications</label>
+                            <input type="text" id="certifications" class="form-control" placeholder="AWS Certified, Certified Scrum Master (comma-separated)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Languages</label>
+                            <input type="text" id="languages" class="form-control" placeholder="English (Native), Spanish (Intermediate)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div class="form-section-block">
+                    <div class="section-header" onclick="toggleSection('projects')">
+                        <h2><i class="fas fa-project-diagram"></i> Projects <span class="optional-badge">Optional</span></h2>
+                        <i class="fas fa-chevron-down section-toggle" id="projectsToggle"></i>
+                    </div>
+                    <div class="section-content" id="projectsContent">
+                        <div id="projectsList"></div>
+                        <button type="button" class="btn btn-secondary btn-add" onclick="addProject()">
+                            <i class="fas fa-plus"></i> Add Project
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="preview-section">
+            <div class="preview-header">
+                <h2><i class="fas fa-eye"></i> Live Preview</h2>
+                <div class="last-saved" id="lastSaved"></div>
+            </div>
+            <div class="ai-score-card" id="aiScoreCard">
+                <h3><i class="fas fa-chart-line"></i> AI Resume Score</h3>
+                <div class="score-grid">
+                    <div class="score-item" id="overallScoreItem">
+                        <div class="score-label">Overall Score</div>
+                        <div class="score-value" id="overallScore">0%</div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="overallScoreFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="score-item" id="professionalismScoreItem">
+                        <div class="score-label">Professionalism</div>
+                        <div class="score-value" id="professionalismScore">0%</div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="professionalismScoreFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="score-item" id="actionVerbScoreItem">
+                        <div class="score-label">Action Verbs</div>
+                        <div class="score-value" id="actionVerbScore">0%</div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="actionVerbScoreFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="score-item" id="quantificationScoreItem">
+                        <div class="score-label">Quantification</div>
+                        <div class="score-value" id="quantificationScore">0%</div>
+                        <div class="score-bar">
+                            <div class="score-fill" id="quantificationScoreFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+
+            <div class="resume-preview" id="resumePreview">
+                <div class="resume-container" id="resumeContainer">
+                    <p class="empty-message">Start filling out the form to see your resume preview here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Suggestions Modal -->
+    <div class="modal" id="aiModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-magic"></i> AI Suggestions</h2>
+                <button class="modal-close" onclick="closeAiModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="aiSuggestionsContent">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Analyzing your text...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keywords Modal -->
+    <div class="modal" id="keywordsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Keyword Suggestions for Software Developers</h2>
+                <button class="modal-close" onclick="closeKeywords()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="keyword-section">
+                    <h3>Programming Languages</h3>
+                    <div class="keyword-tags">
+                        <span class="keyword-tag">JavaScript</span>
+                        <span class="keyword-tag">Python</span>
+                        <span class="keyword-tag">Java</span>
+                        <span class="keyword-tag">C++</span>
+                        <span class="keyword-tag">TypeScript</span>
+                        <span class="keyword-tag">SQL</span>
+                        <span class="keyword-tag">HTML/CSS</span>
+                        <span class="keyword-tag">Ruby</span>
+                        <span class="keyword-tag">Go</span>
+                    </div>
+                </div>
+                <div class="keyword-section">
+                    <h3>Frameworks &amp; Libraries</h3>
+                    <div class="keyword-tags">
+                        <span class="keyword-tag">React</span>
+                        <span class="keyword-tag">Angular</span>
+                        <span class="keyword-tag">Vue.js</span>
+                        <span class="keyword-tag">Node.js</span>
+                        <span class="keyword-tag">Django</span>
+                        <span class="keyword-tag">Flask</span>
+                        <span class="keyword-tag">Spring Boot</span>
+                        <span class="keyword-tag">.NET</span>
+                    </div>
+                </div>
+                <div class="keyword-section">
+                    <h3>Tools &amp; Technologies</h3>
+                    <div class="keyword-tags">
+                        <span class="keyword-tag">Git</span>
+                        <span class="keyword-tag">Docker</span>
+                        <span class="keyword-tag">Kubernetes</span>
+                        <span class="keyword-tag">AWS</span>
+                        <span class="keyword-tag">Azure</span>
+                        <span class="keyword-tag">Jenkins</span>
+                        <span class="keyword-tag">CI/CD</span>
+                        <span class="keyword-tag">JIRA</span>
+                        <span class="keyword-tag">Agile</span>
+                        <span class="keyword-tag">Scrum</span>
+                    </div>
+                </div>
+                <div class="keyword-section">
+                    <h3>Action Verbs</h3>
+                    <div class="keyword-tags">
+                        <span class="keyword-tag">Achieved</span>
+                        <span class="keyword-tag">Developed</span>
+                        <span class="keyword-tag">Implemented</span>
+                        <span class="keyword-tag">Managed</span>
+                        <span class="keyword-tag">Led</span>
+                        <span class="keyword-tag">Designed</span>
+                        <span class="keyword-tag">Optimized</span>
+                        <span class="keyword-tag">Analyzed</span>
+                        <span class="keyword-tag">Coordinated</span>
+                        <span class="keyword-tag">Streamlined</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
