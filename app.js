@@ -20,14 +20,26 @@ const ACTION_VERBS = ['Achieved', 'Developed', 'Implemented', 'Managed', 'Led', 
 const QUANTIFICATION_PATTERNS = /\d+%|\d+x|\$\d+|\d+\+/g;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeEventListeners();
     loadFromMemory();
+    // Initialize Theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+
     updatePreview();
     updateProgress();
     calculateAiScores();
     startAutoSave();
 });
+
+function updateThemeIcon(theme) {
+    const icon = document.querySelector('#themeToggle i');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+}
 
 function initializeEventListeners() {
     // Contact information
@@ -37,32 +49,54 @@ function initializeEventListeners() {
     document.getElementById('location').addEventListener('input', debounce(updatePreview, 300));
     document.getElementById('linkedin').addEventListener('input', debounce(updatePreview, 300));
     document.getElementById('portfolio').addEventListener('input', debounce(updatePreview, 300));
-    
+
     // Professional summary
     const summaryField = document.getElementById('summary');
-    summaryField.addEventListener('input', function() {
+    summaryField.addEventListener('input', function () {
         document.getElementById('summaryCount').textContent = this.value.length;
         debounce(updatePreview, 300)();
     });
-    
+
     // Skills
     document.getElementById('technicalSkills').addEventListener('input', debounce(updatePreview, 300));
     document.getElementById('softSkills').addEventListener('input', debounce(updatePreview, 300));
     document.getElementById('certifications').addEventListener('input', debounce(updatePreview, 300));
     document.getElementById('languages').addEventListener('input', debounce(updatePreview, 300));
-    
+
     // Buttons
     document.getElementById('downloadPdfBtn').addEventListener('click', downloadPDF);
     document.getElementById('downloadDocxBtn').addEventListener('click', downloadDOCX);
     document.getElementById('clearBtn').addEventListener('click', clearForm);
     document.getElementById('loadBtn').addEventListener('click', loadFromMemory);
     document.getElementById('fillSampleBtn').addEventListener('click', fillSampleData);
+
+    // New Buttons
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        saveToMemory();
+        alert('Resume saved successfully!');
+    });
+
+
+    document.getElementById('templatesBtn').addEventListener('click', () => {
+        saveToMemory();
+        window.open('templates.html', '_blank');
+    });
+
+    // Theme Toggle
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    });
 }
 
 function toggleSection(sectionId) {
     const content = document.getElementById(sectionId + 'Content');
     const toggle = document.getElementById(sectionId + 'Toggle');
-    
+
     content.classList.toggle('collapsed');
     toggle.classList.toggle('rotated');
 }
@@ -70,7 +104,7 @@ function toggleSection(sectionId) {
 function toggleTips() {
     const content = document.getElementById('tipsContent');
     const chevron = document.getElementById('tipsChevron');
-    
+
     content.classList.toggle('collapsed');
     chevron.classList.toggle('rotated');
 }
@@ -87,7 +121,7 @@ function closeKeywords() {
 function addExperience() {
     experienceCounter++;
     const experienceList = document.getElementById('experienceList');
-    
+
     const entryDiv = document.createElement('div');
     entryDiv.className = 'experience-entry';
     entryDiv.id = `experience-${experienceCounter}`;
@@ -136,15 +170,15 @@ function addExperience() {
             </button>
         </div>
     `;
-    
+
     experienceList.appendChild(entryDiv);
     addAchievement(experienceCounter);
-    
+
     // Add event listeners
     entryDiv.querySelectorAll('input, textarea').forEach(input => {
         input.addEventListener('input', debounce(updatePreview, 300));
     });
-    
+
     updatePreview();
 }
 
@@ -158,7 +192,7 @@ function removeExperience(id) {
 function addAchievement(expId) {
     const achievementsList = document.getElementById(`achievements-${expId}`);
     const achievementId = Date.now();
-    
+
     const achievementDiv = document.createElement('div');
     achievementDiv.className = 'achievement-item';
     achievementDiv.innerHTML = `
@@ -170,9 +204,9 @@ function addAchievement(expId) {
             <i class="fas fa-times"></i>
         </button>
     `;
-    
+
     achievementsList.appendChild(achievementDiv);
-    
+
     achievementDiv.querySelector('input').addEventListener('input', debounce(updatePreview, 300));
 }
 
@@ -180,7 +214,7 @@ function addAchievement(expId) {
 function addEducation() {
     educationCounter++;
     const educationList = document.getElementById('educationList');
-    
+
     const entryDiv = document.createElement('div');
     entryDiv.className = 'education-entry';
     entryDiv.id = `education-${educationCounter}`;
@@ -216,14 +250,14 @@ function addEducation() {
             <input type="text" class="form-control" data-field="honors" placeholder="Dean's List, Summa Cum Laude">
         </div>
     `;
-    
+
     educationList.appendChild(entryDiv);
-    
+
     // Add event listeners
     entryDiv.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', debounce(updatePreview, 300));
     });
-    
+
     updatePreview();
 }
 
@@ -238,7 +272,7 @@ function removeEducation(id) {
 function addProject() {
     projectCounter++;
     const projectsList = document.getElementById('projectsList');
-    
+
     const entryDiv = document.createElement('div');
     entryDiv.className = 'project-entry';
     entryDiv.id = `project-${projectCounter}`;
@@ -268,14 +302,14 @@ function addProject() {
             </div>
         </div>
     `;
-    
+
     projectsList.appendChild(entryDiv);
-    
+
     // Add event listeners
     entryDiv.querySelectorAll('input, textarea').forEach(input => {
         input.addEventListener('input', debounce(updatePreview, 300));
     });
-    
+
     updatePreview();
 }
 
@@ -290,7 +324,7 @@ function removeProject(id) {
 function updatePreview() {
     calculateAiScores();
     const resumeContainer = document.getElementById('resumeContainer');
-    
+
     // Collect data
     const name = document.getElementById('fullName').value;
     const email = document.getElementById('email').value;
@@ -299,15 +333,15 @@ function updatePreview() {
     const linkedin = document.getElementById('linkedin').value;
     const portfolio = document.getElementById('portfolio').value;
     const summary = document.getElementById('summary').value;
-    
+
     // If no data, show empty message
     if (!name && !email && !phone && !summary) {
         resumeContainer.innerHTML = '<p class="empty-message">Start filling out the form to see your resume preview here...</p>';
         return;
     }
-    
+
     let html = '';
-    
+
     // Header
     if (name || email || phone || location || linkedin || portfolio) {
         html += '<div class="resume-header">';
@@ -332,7 +366,7 @@ function updatePreview() {
 
         html += '</div>';
     }
-    
+
     // Professional Summary
     if (summary) {
         html += '<div class="resume-section">';
@@ -340,7 +374,7 @@ function updatePreview() {
         html += `<div class="resume-summary">${escapeHtml(summary)}</div>`;
         html += '</div>';
     }
-    
+
     // Work Experience
     const experiences = Array.from(document.querySelectorAll('.experience-entry'));
     if (experiences.length > 0) {
@@ -349,11 +383,11 @@ function updatePreview() {
             const company = exp.querySelector('[data-field="company"]').value;
             return title || company;
         });
-        
+
         if (hasContent) {
             html += '<div class="resume-section">';
             html += '<div class="resume-section-title">Work Experience</div>';
-            
+
             experiences.forEach(exp => {
                 const title = exp.querySelector('[data-field="title"]').value;
                 const company = exp.querySelector('[data-field="company"]').value;
@@ -362,7 +396,7 @@ function updatePreview() {
                 const endDate = exp.querySelector('[data-field="endDate"]').value;
                 const present = exp.querySelector('[data-field="present"]').checked;
                 const achievements = Array.from(exp.querySelectorAll('[data-field="achievement"]')).map(a => a.value).filter(a => a);
-                
+
                 if (title || company) {
                     html += '<div class="resume-entry">';
                     html += '<div class="entry-title-row">';
@@ -388,11 +422,11 @@ function updatePreview() {
                     html += '</div>';
                 }
             });
-            
+
             html += '</div>';
         }
     }
-    
+
     // Education
     const educationEntries = Array.from(document.querySelectorAll('.education-entry'));
     if (educationEntries.length > 0) {
@@ -401,18 +435,18 @@ function updatePreview() {
             const institution = edu.querySelector('[data-field="institution"]').value;
             return degree || institution;
         });
-        
+
         if (hasContent) {
             html += '<div class="resume-section">';
             html += '<div class="resume-section-title">Education</div>';
-            
+
             educationEntries.forEach(edu => {
                 const degree = edu.querySelector('[data-field="degree"]').value;
                 const institution = edu.querySelector('[data-field="institution"]').value;
                 const graduation = edu.querySelector('[data-field="graduation"]').value;
                 const gpa = edu.querySelector('[data-field="gpa"]').value;
                 const honors = edu.querySelector('[data-field="honors"]').value;
-                
+
                 if (degree || institution) {
                     html += '<div class="resume-entry">';
                     html += '<div class="entry-title-row">';
@@ -433,21 +467,21 @@ function updatePreview() {
                     html += '</div>';
                 }
             });
-            
+
             html += '</div>';
         }
     }
-    
+
     // Skills
     const technicalSkills = document.getElementById('technicalSkills').value;
     const softSkills = document.getElementById('softSkills').value;
     const certifications = document.getElementById('certifications').value;
     const languages = document.getElementById('languages').value;
-    
+
     if (technicalSkills || softSkills || certifications || languages) {
         html += '<div class="resume-section">';
         html += '<div class="resume-section-title">Skills</div>';
-        
+
         if (technicalSkills) {
             html += '<div><strong>Technical Skills:</strong> <span class="resume-skills">';
             technicalSkills.split(',').forEach(skill => {
@@ -457,7 +491,7 @@ function updatePreview() {
             });
             html += '</span></div>';
         }
-        
+
         if (softSkills) {
             html += '<div><strong>Soft Skills:</strong> <span class="resume-skills">';
             softSkills.split(',').forEach(skill => {
@@ -467,7 +501,7 @@ function updatePreview() {
             });
             html += '</span></div>';
         }
-        
+
         if (certifications) {
             html += '<div><strong>Certifications:</strong> <span class="resume-skills">';
             certifications.split(',').forEach(cert => {
@@ -477,7 +511,7 @@ function updatePreview() {
             });
             html += '</span></div>';
         }
-        
+
         if (languages) {
             html += '<div><strong>Languages:</strong> <span class="resume-skills">';
             languages.split(',').forEach(lang => {
@@ -487,10 +521,10 @@ function updatePreview() {
             });
             html += '</span></div>';
         }
-        
+
         html += '</div>';
     }
-    
+
     // Projects
     const projects = Array.from(document.querySelectorAll('.project-entry'));
     if (projects.length > 0) {
@@ -498,17 +532,17 @@ function updatePreview() {
             const name = proj.querySelector('[data-field="name"]').value;
             return name;
         });
-        
+
         if (hasContent) {
             html += '<div class="resume-section">';
             html += '<div class="resume-section-title">Projects</div>';
-            
+
             projects.forEach(proj => {
                 const name = proj.querySelector('[data-field="name"]').value;
                 const description = proj.querySelector('[data-field="description"]').value;
                 const technologies = proj.querySelector('[data-field="technologies"]').value;
                 const link = proj.querySelector('[data-field="link"]').value;
-                
+
                 if (name) {
                     html += '<div class="resume-entry">';
                     html += `<div class="entry-title">${escapeHtml(name)}</div>`;
@@ -524,11 +558,11 @@ function updatePreview() {
                     html += '</div>';
                 }
             });
-            
+
             html += '</div>';
         }
     }
-    
+
     resumeContainer.innerHTML = html;
     updateProgress();
 }
@@ -541,14 +575,14 @@ function downloadPDF() {
     const name = document.getElementById('fullName').value || 'Resume';
     const date = new Date().toISOString().split('T')[0];
     const filename = `Resume_${name.replace(/\s+/g, '_')}_${date}.pdf`;
-    
+
     const element = document.getElementById('resumeContainer');
-    
+
     const opt = {
         margin: [10, 10, 10, 10],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
+        html2canvas: {
             letterRendering: true,
             scale: 2,
             useCORS: true,
@@ -558,7 +592,7 @@ function downloadPDF() {
         jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
-    
+
     html2pdf().set(opt).from(element).save();
 }
 
@@ -566,7 +600,7 @@ function downloadDOCX() {
     const name = document.getElementById('fullName').value || 'Resume';
     const date = new Date().toISOString().split('T')[0];
     const filename = `Resume_${name.replace(/\s+/g, '_')}_${date}.docx`;
-    
+
     const element = document.getElementById('resumeContainer');
     const htmlContent = element.innerHTML;
 
@@ -581,7 +615,7 @@ function downloadDOCX() {
         const withSeps = inner.replace(/<\/span>\s*<span>/g, `</span><span class="sep"> | </span><span>`);
         return `<div class="resume-contact">${withSeps}</div>`;
     });
-    
+
     // Create a complete HTML document for docx conversion with whitespace preservation
     const completeHtml = `
         <!DOCTYPE html>
@@ -617,7 +651,7 @@ function downloadDOCX() {
         <body>${docxHtmlContent}</body>
         </html>
     `;
-    
+
     const converted = htmlDocx.asBlob(completeHtml);
     const link = document.createElement('a');
     link.href = URL.createObjectURL(converted);
@@ -647,7 +681,7 @@ function saveToMemory() {
         education: [],
         projects: []
     };
-    
+
     // Save experiences
     document.querySelectorAll('.experience-entry').forEach(exp => {
         const expData = {
@@ -661,7 +695,7 @@ function saveToMemory() {
         };
         formData.experiences.push(expData);
     });
-    
+
     // Save education
     document.querySelectorAll('.education-entry').forEach(edu => {
         const eduData = {
@@ -673,7 +707,7 @@ function saveToMemory() {
         };
         formData.education.push(eduData);
     });
-    
+
     // Save projects
     document.querySelectorAll('.project-entry').forEach(proj => {
         const projData = {
@@ -684,18 +718,31 @@ function saveToMemory() {
         };
         formData.projects.push(projData);
     });
-    
+
     resumeData = formData;
-    
+
+    // Save to localStorage
+    localStorage.setItem('atsResumeData', JSON.stringify(resumeData));
+
     const now = new Date().toLocaleString();
     document.getElementById('lastSaved').textContent = `Last saved: ${now}`;
 }
 
 function loadFromMemory() {
+    // Try loading from localStorage first
+    const savedData = localStorage.getItem('atsResumeData');
+    if (savedData) {
+        try {
+            resumeData = JSON.parse(savedData);
+        } catch (e) {
+            console.error('Error parsing saved resume data:', e);
+        }
+    }
+
     if (!resumeData.contact.fullName && experienceCounter === 0) {
         return;
     }
-    
+
     // Load contact
     document.getElementById('fullName').value = resumeData.contact.fullName || '';
     document.getElementById('email').value = resumeData.contact.email || '';
@@ -703,17 +750,17 @@ function loadFromMemory() {
     document.getElementById('location').value = resumeData.contact.location || '';
     document.getElementById('linkedin').value = resumeData.contact.linkedin || '';
     document.getElementById('portfolio').value = resumeData.contact.portfolio || '';
-    
+
     // Load summary
     document.getElementById('summary').value = resumeData.summary || '';
     document.getElementById('summaryCount').textContent = resumeData.summary?.length || 0;
-    
+
     // Load skills
     document.getElementById('technicalSkills').value = resumeData.skills?.technical || '';
     document.getElementById('softSkills').value = resumeData.skills?.soft || '';
     document.getElementById('certifications').value = resumeData.skills?.certifications || '';
     document.getElementById('languages').value = resumeData.skills?.languages || '';
-    
+
     // Load experiences
     document.getElementById('experienceList').innerHTML = '';
     experienceCounter = 0;
@@ -727,7 +774,7 @@ function loadFromMemory() {
             expEntry.querySelector('[data-field="startDate"]').value = exp.startDate || '';
             expEntry.querySelector('[data-field="endDate"]').value = exp.endDate || '';
             expEntry.querySelector('[data-field="present"]').checked = exp.present || false;
-            
+
             const achievementsList = expEntry.querySelector(`#achievements-${experienceCounter}`);
             achievementsList.innerHTML = '';
             if (exp.achievements) {
@@ -745,7 +792,7 @@ function loadFromMemory() {
             }
         });
     }
-    
+
     // Load education
     document.getElementById('educationList').innerHTML = '';
     educationCounter = 0;
@@ -760,7 +807,7 @@ function loadFromMemory() {
             eduEntry.querySelector('[data-field="honors"]').value = edu.honors || '';
         });
     }
-    
+
     // Load projects
     document.getElementById('projectsList').innerHTML = '';
     projectCounter = 0;
@@ -774,7 +821,7 @@ function loadFromMemory() {
             projEntry.querySelector('[data-field="link"]').value = proj.link || '';
         });
     }
-    
+
     updatePreview();
 }
 
@@ -808,17 +855,17 @@ function fillSampleData() {
     document.getElementById('location').value = 'San Francisco, CA';
     document.getElementById('linkedin').value = 'linkedin.com/in/johndeveloper';
     document.getElementById('portfolio').value = 'github.com/johndeveloper';
-    
+
     // Summary
     document.getElementById('summary').value = 'Full-stack software engineer with 5+ years of experience building scalable web applications. Specialized in JavaScript, React, and Node.js. Proven track record of improving application performance by 40% and reducing load times.';
     document.getElementById('summaryCount').textContent = document.getElementById('summary').value.length;
-    
+
     // Skills
     document.getElementById('technicalSkills').value = 'JavaScript, Python, React, Node.js, Express, MongoDB, PostgreSQL, Docker, AWS, Git';
     document.getElementById('softSkills').value = 'Team Leadership, Agile Methodologies, Problem Solving, Communication';
     document.getElementById('certifications').value = 'AWS Certified Solutions Architect, Certified Scrum Master';
     document.getElementById('languages').value = 'English (Native), Spanish (Intermediate)';
-    
+
     // Add work experience 1
     addExperience();
     let expEntry = document.querySelector(`#experience-${experienceCounter}`);
@@ -827,7 +874,7 @@ function fillSampleData() {
     expEntry.querySelector('[data-field="location"]').value = 'San Francisco, CA';
     expEntry.querySelector('[data-field="startDate"]').value = '06/2021';
     expEntry.querySelector('[data-field="present"]').checked = true;
-    
+
     const achievements1 = expEntry.querySelector(`#achievements-${experienceCounter}`);
     achievements1.querySelector('[data-field="achievement"]').value = 'Developed microservices architecture reducing API response time by 45%';
     addAchievement(experienceCounter);
@@ -835,7 +882,7 @@ function fillSampleData() {
     ach1Inputs[1].value = 'Led team of 4 engineers in rebuilding customer dashboard using React';
     addAchievement(experienceCounter);
     ach1Inputs[2].value = 'Implemented CI/CD pipeline cutting deployment time from 2 hours to 15 minutes';
-    
+
     // Add work experience 2
     addExperience();
     expEntry = document.querySelector(`#experience-${experienceCounter}`);
@@ -844,7 +891,7 @@ function fillSampleData() {
     expEntry.querySelector('[data-field="location"]').value = 'San Jose, CA';
     expEntry.querySelector('[data-field="startDate"]').value = '01/2019';
     expEntry.querySelector('[data-field="endDate"]').value = '05/2021';
-    
+
     const achievements2 = expEntry.querySelector(`#achievements-${experienceCounter}`);
     achievements2.querySelector('[data-field="achievement"]').value = 'Built RESTful APIs serving 100K+ daily active users';
     addAchievement(experienceCounter);
@@ -852,7 +899,7 @@ function fillSampleData() {
     ach2Inputs[1].value = 'Optimized database queries improving application performance by 30%';
     addAchievement(experienceCounter);
     ach2Inputs[2].value = 'Collaborated with UX team to redesign mobile app (4.8 star rating)';
-    
+
     // Add education
     addEducation();
     const eduEntry = document.querySelector(`#education-${educationCounter}`);
@@ -861,7 +908,7 @@ function fillSampleData() {
     eduEntry.querySelector('[data-field="graduation"]').value = '05/2018';
     eduEntry.querySelector('[data-field="gpa"]').value = '3.8';
     eduEntry.querySelector('[data-field="honors"]').value = 'Dean\'s List, Summa Cum Laude';
-    
+
     updatePreview();
 }
 
@@ -873,24 +920,24 @@ function updateProgress() {
         document.getElementById('location').value,
         document.getElementById('summary').value
     ];
-    
+
     let filledRequired = requiredFields.filter(f => f).length;
     let totalRequired = requiredFields.length;
-    
+
     // Check for at least one work experience
     const hasExperience = document.querySelectorAll('.experience-entry').length > 0;
     if (hasExperience) filledRequired++;
     totalRequired++;
-    
+
     // Check for at least one education
     const hasEducation = document.querySelectorAll('.education-entry').length > 0;
     if (hasEducation) filledRequired++;
     totalRequired++;
-    
+
     // Check for skills
     if (document.getElementById('technicalSkills').value) filledRequired++;
     totalRequired++;
-    
+
     const progress = Math.round((filledRequired / totalRequired) * 100);
     document.getElementById('progressText').textContent = `Resume ${progress}% Complete`;
 }
@@ -923,9 +970,9 @@ function escapeHtml(text) {
 // AI Suggestion Functions
 async function suggestImprovement(fieldType, achievementId = null) {
     currentAiField = { type: fieldType, id: achievementId };
-    
+
     let textToAnalyze = '';
-    
+
     if (fieldType === 'summary') {
         textToAnalyze = document.getElementById('summary').value;
     } else if (fieldType === 'achievement' && achievementId) {
@@ -934,12 +981,12 @@ async function suggestImprovement(fieldType, achievementId = null) {
             textToAnalyze = input.value;
         }
     }
-    
+
     if (!textToAnalyze.trim()) {
         alert('Please enter some text before requesting AI suggestions.');
         return;
     }
-    
+
     // Show modal with loading state
     document.getElementById('aiModal').classList.add('active');
     document.getElementById('aiSuggestionsContent').innerHTML = `
@@ -948,7 +995,7 @@ async function suggestImprovement(fieldType, achievementId = null) {
             <p>Analyzing your text...</p>
         </div>
     `;
-    
+
     try {
         // Call LanguageTool API
         const response = await fetch('https://api.languagetool.org/v2/check', {
@@ -958,13 +1005,13 @@ async function suggestImprovement(fieldType, achievementId = null) {
             },
             body: `text=${encodeURIComponent(textToAnalyze)}&language=en-US`
         });
-        
+
         const data = await response.json();
         aiSuggestions = data.matches || [];
-        
+
         // Generate additional suggestions based on field type
         const enhancedSuggestions = generateEnhancedSuggestions(textToAnalyze, fieldType, aiSuggestions);
-        
+
         displayAiSuggestions(textToAnalyze, enhancedSuggestions);
     } catch (error) {
         console.error('AI suggestion error:', error);
@@ -979,12 +1026,12 @@ async function suggestImprovement(fieldType, achievementId = null) {
 
 function generateEnhancedSuggestions(text, fieldType, grammarSuggestions) {
     const suggestions = [...grammarSuggestions];
-    
+
     if (fieldType === 'achievement') {
         // Check for action verbs
         const firstWord = text.trim().split(' ')[0];
         const hasActionVerb = ACTION_VERBS.some(verb => firstWord.toLowerCase() === verb.toLowerCase());
-        
+
         if (!hasActionVerb) {
             const suggestedVerb = ACTION_VERBS[Math.floor(Math.random() * ACTION_VERBS.length)];
             suggestions.push({
@@ -995,7 +1042,7 @@ function generateEnhancedSuggestions(text, fieldType, grammarSuggestions) {
                 context: { text: text, offset: 0, length: firstWord.length }
             });
         }
-        
+
         // Check for quantification
         const hasNumbers = QUANTIFICATION_PATTERNS.test(text);
         if (!hasNumbers) {
@@ -1008,7 +1055,7 @@ function generateEnhancedSuggestions(text, fieldType, grammarSuggestions) {
             });
         }
     }
-    
+
     if (fieldType === 'summary') {
         // Check length
         if (text.length < 100) {
@@ -1021,13 +1068,13 @@ function generateEnhancedSuggestions(text, fieldType, grammarSuggestions) {
             });
         }
     }
-    
+
     return suggestions;
 }
 
 function displayAiSuggestions(originalText, suggestions) {
     const content = document.getElementById('aiSuggestionsContent');
-    
+
     if (suggestions.length === 0) {
         content.innerHTML = `
             <div class="no-suggestions">
@@ -1037,14 +1084,14 @@ function displayAiSuggestions(originalText, suggestions) {
         `;
         return;
     }
-    
+
     let html = '';
-    
+
     suggestions.forEach((suggestion, index) => {
         const issueType = suggestion.rule?.issueType || 'grammar';
         const message = suggestion.message || suggestion.shortMessage || 'Improvement suggested';
         const hasReplacement = suggestion.replacements && suggestion.replacements.length > 0;
-        
+
         html += `
             <div class="suggestion-item">
                 <div class="suggestion-header">
@@ -1052,7 +1099,7 @@ function displayAiSuggestions(originalText, suggestions) {
                 </div>
                 <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">${escapeHtml(message)}</p>
         `;
-        
+
         if (hasReplacement) {
             const replacement = suggestion.replacements[0].value;
             html += `
@@ -1074,21 +1121,21 @@ function displayAiSuggestions(originalText, suggestions) {
                 </div>
             `;
         }
-        
+
         html += '</div>';
     });
-    
+
     content.innerHTML = html;
 }
 
 function acceptSuggestion(suggestedText) {
     if (!currentAiField) return;
-    
+
     // Decode HTML entities
     const textarea = document.createElement('textarea');
     textarea.innerHTML = suggestedText;
     const decodedText = textarea.value;
-    
+
     if (currentAiField.type === 'summary') {
         document.getElementById('summary').value = decodedText;
         document.getElementById('summaryCount').textContent = decodedText.length;
@@ -1098,7 +1145,7 @@ function acceptSuggestion(suggestedText) {
             input.value = decodedText;
         }
     }
-    
+
     updatePreview();
     calculateAiScores();
     closeAiModal();
@@ -1118,18 +1165,18 @@ function closeAiModal() {
 function calculateAiScores() {
     const summary = document.getElementById('summary').value;
     const experiences = Array.from(document.querySelectorAll('[data-field="achievement"]')).map(el => el.value).filter(v => v);
-    
+
     let professionalismScore = 0;
     let actionVerbScore = 0;
     let quantificationScore = 0;
-    
+
     // Professional summary check
     if (summary.length >= 150 && summary.length <= 400) {
         professionalismScore += 40;
     } else if (summary.length > 0) {
         professionalismScore += 20;
     }
-    
+
     // Check action verbs in achievements
     let actionVerbCount = 0;
     experiences.forEach(exp => {
@@ -1138,11 +1185,11 @@ function calculateAiScores() {
             actionVerbCount++;
         }
     });
-    
+
     if (experiences.length > 0) {
         actionVerbScore = Math.min(100, (actionVerbCount / experiences.length) * 100);
     }
-    
+
     // Check quantification
     let quantifiedCount = 0;
     experiences.forEach(exp => {
@@ -1150,28 +1197,28 @@ function calculateAiScores() {
             quantifiedCount++;
         }
     });
-    
+
     if (experiences.length > 0) {
         quantificationScore = Math.min(100, (quantifiedCount / experiences.length) * 100);
     }
-    
+
     // Additional professionalism checks
-    const hasContact = document.getElementById('fullName').value && 
-                       document.getElementById('email').value && 
-                       document.getElementById('phone').value;
+    const hasContact = document.getElementById('fullName').value &&
+        document.getElementById('email').value &&
+        document.getElementById('phone').value;
     if (hasContact) professionalismScore += 30;
-    
+
     const hasEducation = document.querySelectorAll('.education-entry').length > 0;
     if (hasEducation) professionalismScore += 15;
-    
+
     const hasSkills = document.getElementById('technicalSkills').value;
     if (hasSkills) professionalismScore += 15;
-    
+
     professionalismScore = Math.min(100, professionalismScore);
-    
+
     // Calculate overall
     const overallScore = Math.round((professionalismScore + actionVerbScore + quantificationScore) / 3);
-    
+
     // Update UI
     updateScoreDisplay('overallScore', overallScore);
     updateScoreDisplay('professionalismScore', Math.round(professionalismScore));
@@ -1182,15 +1229,15 @@ function calculateAiScores() {
 function updateScoreDisplay(elementId, score) {
     const element = document.getElementById(elementId);
     if (!element) return;
-    
+
     element.textContent = score + '%';
-    
+
     // Update score item container class
     const itemId = elementId.replace('Score', 'ScoreItem');
     const itemElement = document.getElementById(itemId);
     if (itemElement) {
         itemElement.classList.remove('excellent', 'good', 'needs-work');
-        
+
         if (score >= 85) {
             itemElement.classList.add('excellent');
         } else if (score >= 70) {
@@ -1199,7 +1246,7 @@ function updateScoreDisplay(elementId, score) {
             itemElement.classList.add('needs-work');
         }
     }
-    
+
     // Update progress bar
     const fillId = elementId.replace('Score', 'ScoreFill');
     const fillElement = document.getElementById(fillId);

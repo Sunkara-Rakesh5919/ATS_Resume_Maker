@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Templates</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="templates.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Left Side: Preview -->
+        <div class="preview-pane">
+            <div class="preview-header">
+                <h2>Resume Preview</h2>
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="window.close()">
+                        <i class="fas fa-arrow-left"></i> Back to Editor
+                    </button>
+                    <button class="btn btn-primary" id="downloadPdfBtn">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+
+                    <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="preview-content">
+                <div id="resumePreview" class="resume-preview">
+                    <!-- Resume content will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Template Selection -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Select Template</h2>
+                <p>Choose from 10+ ATS-friendly designs</p>
+            </div>
+            <div class="template-list" id="templateList">
+                <!-- Template items will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="templates.js"></script>
+</body>
+
+</html>

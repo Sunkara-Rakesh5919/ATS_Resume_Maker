@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header class="app-header">
         <div class="header-content">
@@ -33,6 +35,18 @@
                 <button class="btn btn-primary" id="downloadDocxBtn" title="Download as DOCX">
                     <i class="fas fa-file-word"></i> DOCX
                 </button>
+                <div class="divider-vertical"
+                    style="display:inline-block; width:1px; height:24px; background:#ddd; margin:0 10px; vertical-align:middle;">
+                </div>
+                <button class="btn btn-success" id="saveBtn" title="Save Resume">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn btn-info" id="templatesBtn" title="View Templates">
+                    <i class="fas fa-th-large"></i> Templates
+                </button>
+                <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -50,7 +64,8 @@
                         <li><i class="fas fa-check"></i> Quantify achievements with numbers</li>
                         <li><i class="fas fa-check"></i> Use action verbs (Developed, Implemented, Managed)</li>
                         <li><i class="fas fa-check"></i> Keep format simple and clean</li>
-                        <li><i class="fas fa-check"></i> Include full terms with acronyms (e.g., API - Application Programming Interface)</li>
+                        <li><i class="fas fa-check"></i> Include full terms with acronyms (e.g., API - Application
+                            Programming Interface)</li>
                         <li><i class="fas fa-check"></i> Target ATS score: 85+</li>
                     </ul>
                     <button class="btn btn-sm btn-secondary" onclick="showKeywords()">View Keyword Suggestions</button>
@@ -74,7 +89,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Email Address <span class="required">*</span></label>
-                                <input type="email" id="email" class="form-control" placeholder="john.doe@email.com" required>
+                                <input type="email" id="email" class="form-control" placeholder="john.doe@email.com"
+                                    required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Phone Number <span class="required">*</span></label>
@@ -84,13 +100,15 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Location <span class="required">*</span></label>
-                                <input type="text" id="location" class="form-control" placeholder="San Francisco, CA" required>
+                                <input type="text" id="location" class="form-control" placeholder="San Francisco, CA"
+                                    required>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">LinkedIn Profile URL</label>
-                                <input type="url" id="linkedin" class="form-control" placeholder="linkedin.com/in/johndoe">
+                                <input type="url" id="linkedin" class="form-control"
+                                    placeholder="linkedin.com/in/johndoe">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Portfolio/GitHub URL</label>
@@ -108,10 +126,13 @@
                     </div>
                     <div class="section-content" id="summaryContent">
                         <div class="form-group">
-                            <label class="form-label">Professional Summary <span class="helper-text">(2-4 sentences)</span></label>
-                            <textarea id="summary" class="form-control" rows="4" maxlength="500" placeholder="Highlight your key achievements, skills, and career goals..."></textarea>
+                            <label class="form-label">Professional Summary <span class="helper-text">(2-4
+                                    sentences)</span></label>
+                            <textarea id="summary" class="form-control" rows="4" maxlength="500"
+                                placeholder="Highlight your key achievements, skills, and career goals..."></textarea>
                             <div class="char-counter"><span id="summaryCount">0</span>/500 characters</div>
-                            <button type="button" class="btn btn-sm btn-secondary ai-suggest-btn" onclick="suggestImprovement('summary')">
+                            <button type="button" class="btn btn-sm btn-secondary ai-suggest-btn"
+                                onclick="suggestImprovement('summary')">
                                 <i class="fas fa-magic"></i> AI Suggest
                             </button>
                         </div>
@@ -155,19 +176,23 @@
                     <div class="section-content" id="skillsContent">
                         <div class="form-group">
                             <label class="form-label">Technical Skills</label>
-                            <input type="text" id="technicalSkills" class="form-control" placeholder="JavaScript, Python, React, Node.js, AWS (comma-separated)">
+                            <input type="text" id="technicalSkills" class="form-control"
+                                placeholder="JavaScript, Python, React, Node.js, AWS (comma-separated)">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Soft Skills</label>
-                            <input type="text" id="softSkills" class="form-control" placeholder="Team Leadership, Communication, Problem Solving (comma-separated)">
+                            <input type="text" id="softSkills" class="form-control"
+                                placeholder="Team Leadership, Communication, Problem Solving (comma-separated)">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Certifications</label>
-                            <input type="text" id="certifications" class="form-control" placeholder="AWS Certified, Certified Scrum Master (comma-separated)">
+                            <input type="text" id="certifications" class="form-control"
+                                placeholder="AWS Certified, Certified Scrum Master (comma-separated)">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Languages</label>
-                            <input type="text" id="languages" class="form-control" placeholder="English (Native), Spanish (Intermediate)">
+                            <input type="text" id="languages" class="form-control"
+                                placeholder="English (Native), Spanish (Intermediate)">
                         </div>
                     </div>
                 </div>
@@ -175,7 +200,8 @@
                 <!-- Projects -->
                 <div class="form-section-block">
                     <div class="section-header" onclick="toggleSection('projects')">
-                        <h2><i class="fas fa-project-diagram"></i> Projects <span class="optional-badge">Optional</span></h2>
+                        <h2><i class="fas fa-project-diagram"></i> Projects <span class="optional-badge">Optional</span>
+                        </h2>
                         <i class="fas fa-chevron-down section-toggle" id="projectsToggle"></i>
                     </div>
                     <div class="section-content" id="projectsContent">
@@ -187,7 +213,7 @@
                 </div>
             </form>
         </div>
-        
+
         <div class="preview-section">
             <div class="preview-header">
                 <h2><i class="fas fa-eye"></i> Live Preview</h2>
@@ -226,7 +252,7 @@
                     </div>
                 </div>
             </div>
-           
+
 
             <div class="resume-preview" id="resumePreview">
                 <div class="resume-container" id="resumeContainer">
@@ -327,4 +353,5 @@
     <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
