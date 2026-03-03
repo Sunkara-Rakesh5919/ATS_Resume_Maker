@@ -1,6 +1,8 @@
 // State management
 let resumeData = {
-    contact: {},
+    contact: {
+        profileImage: null  // Base64 image data
+    },
     summary: '',
     experiences: [],
     education: [],
@@ -50,6 +52,9 @@ function initializeEventListeners() {
     document.getElementById('linkedin').addEventListener('input', debounce(updatePreview, 300));
     document.getElementById('portfolio').addEventListener('input', debounce(updatePreview, 300));
 
+    // Image upload
+    document.getElementById('profileImage').addEventListener('change', handleImageUpload);
+
     // Professional summary
     const summaryField = document.getElementById('summary');
     summaryField.addEventListener('input', function () {
@@ -82,6 +87,10 @@ function initializeEventListeners() {
         window.open('templates.html', '_blank');
     });
 
+    document.getElementById('atsCheckBtn').addEventListener('click', () => {
+        window.location.href = 'ats-score-check.html';
+    });
+
     // Theme Toggle
     document.getElementById('themeToggle').addEventListener('click', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -107,6 +116,54 @@ function toggleTips() {
 
     content.classList.toggle('collapsed');
     chevron.classList.toggle('rotated');
+}
+
+// Image Upload Handler
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check file size (limit to 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        alert('File size should not exceed 5MB');
+        event.target.value = '';
+        return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const base64Image = e.target.result;
+        resumeData.contact.profileImage = base64Image;
+
+        // Display preview
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = `
+            <div class="image-preview">
+                <img src="${base64Image}" alt="Profile Photo">
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeProfileImage()" title="Remove photo">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        updatePreview();
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeProfileImage() {
+    resumeData.contact.profileImage = null;
+    document.getElementById('profileImage').value = '';
+    document.getElementById('imagePreviewContainer').innerHTML = '';
+    updatePreview();
 }
 
 function showKeywords() {
@@ -345,6 +402,14 @@ function updatePreview() {
     // Header
     if (name || email || phone || location || linkedin || portfolio) {
         html += '<div class="resume-header">';
+        
+        // Add profile image if available
+        if (resumeData.contact.profileImage) {
+            html += `<div class="resume-header-image"><img src="${resumeData.contact.profileImage}" alt="Profile Photo"></div>`;
+        }
+
+        // Add name and contact info wrapper
+        html += '<div class="resume-header-content">';
         if (name) {
             html += `<div class="resume-name">${escapeHtml(name)}</div>`;
         }
@@ -364,6 +429,7 @@ function updatePreview() {
             html += '</div>';
         }
 
+        html += '</div>';
         html += '</div>';
     }
 
@@ -668,7 +734,8 @@ function saveToMemory() {
             phone: document.getElementById('phone').value,
             location: document.getElementById('location').value,
             linkedin: document.getElementById('linkedin').value,
-            portfolio: document.getElementById('portfolio').value
+            portfolio: document.getElementById('portfolio').value,
+            profileImage: resumeData.contact.profileImage
         },
         summary: document.getElementById('summary').value,
         skills: {
@@ -751,6 +818,19 @@ function loadFromMemory() {
     document.getElementById('linkedin').value = resumeData.contact.linkedin || '';
     document.getElementById('portfolio').value = resumeData.contact.portfolio || '';
 
+    // Load profile image
+    if (resumeData.contact.profileImage) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = `
+            <div class="image-preview">
+                <img src="${resumeData.contact.profileImage}" alt="Profile Photo">
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeProfileImage()" title="Remove photo">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }
+
     // Load summary
     document.getElementById('summary').value = resumeData.summary || '';
     document.getElementById('summaryCount').textContent = resumeData.summary?.length || 0;
@@ -828,6 +908,8 @@ function loadFromMemory() {
 function clearForm() {
     if (confirm('Are you sure you want to clear all form data? This action cannot be undone.')) {
         document.getElementById('resumeForm').reset();
+        document.getElementById('profileImage').value = '';
+        document.getElementById('imagePreviewContainer').innerHTML = '';
         document.getElementById('experienceList').innerHTML = '';
         document.getElementById('educationList').innerHTML = '';
         document.getElementById('projectsList').innerHTML = '';
@@ -835,7 +917,7 @@ function clearForm() {
         educationCounter = 0;
         projectCounter = 0;
         resumeData = {
-            contact: {},
+            contact: { profileImage: null },
             summary: '',
             experiences: [],
             education: [],

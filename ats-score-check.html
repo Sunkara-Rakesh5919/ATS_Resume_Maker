@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Score Check - Resume Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .ats-score-page {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .ats-upload-section {
+            background: var(--color-surface);
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ats-upload-section:hover {
+            border-color: var(--color-primary);
+            background-color: var(--color-bg-1);
+        }
+
+        .ats-upload-section.active {
+            border-color: var(--color-primary);
+            background-color: var(--color-bg-1);
+        }
+
+        #resumeFileInput {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        .ats-results-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .ats-score-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-value {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            color: white;
+        }
+
+        .score-value.excellent {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .score-value.good {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .score-value.needs-work {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .score-status {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--color-bg-1);
+            padding: 1rem;
+            border-radius: var(--radius-base);
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--color-text);
+        }
+
+        .metric-value.excellent {
+            color: #22c55e;
+        }
+
+        .metric-value.good {
+            color: #3b82f6;
+        }
+
+        .metric-value.needs-work {
+            color: #f97316;
+        }
+
+        .analysis-section {
+            grid-column: 1 / -1;
+        }
+
+        .analysis-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analysis-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .finding-item {
+            background: var(--color-bg-1);
+            border-left: 4px solid var(--color-primary);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: var(--radius-base);
+        }
+
+        .finding-item.positive {
+            border-left-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .finding-item.caution {
+            border-left-color: #f97316;
+            background: rgba(249, 115, 34, 0.05);
+        }
+
+        .finding-item.neutral {
+            border-left-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .finding-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .finding-text {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .finding-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .job-description-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .job-description-section h3 {
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        textarea.form-control {
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .recommendations {
+            background: var(--color-bg-3);
+            border-left: 4px solid #22c55e;
+            padding: 1.5rem;
+            border-radius: var(--radius-base);
+            margin-top: 1rem;
+        }
+
+        .recommendations h4 {
+            margin-bottom: 1rem;
+            color: #22c55e;
+        }
+
+        .recommendations ol {
+            margin-left: 1.5rem;
+            color: var(--color-text-secondary);
+        }
+
+        .recommendations li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            background: var(--color-primary);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+        }
+
+        .back-btn {
+            margin-bottom: 1rem;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            gap: 1rem;
+        }
+
+        .spinner {
+            border: 4px solid var(--color-border);
+            border-top: 4px solid var(--color-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .file-name {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .ats-results-section {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .analysis-section {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-file-check"></i> ATS Score Check</h1>
+                <span class="header-subtitle">Analyze & Optimize Your Resume</span>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back to Editor
+                </button>
+                <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="ats-score-page">
+        <div class="ats-upload-section" id="uploadSection" onclick="triggerFileInput()">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h2>Upload Your Resume</h2>
+            <p>Drag & drop your resume or click to select</p>
+            <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-top: 0.5rem;">
+                Supported formats: PDF, DOCX, or TXT
+            </p>
+            <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt,.doc" onchange="handleFileUpload(event)">
+            <div id="fileName" class="file-name"></div>
+        </div>
+
+        <div class="job-description-section" id="jobDescSection">
+            <h3><i class="fas fa-briefcase"></i> Add Job Description (Optional)</h3>
+            <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">Upload or paste a job description to get role-specific analysis</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label class="form-label">Upload Job Description</label>
+                    <input type="file" id="jobDescFileInput" class="form-control" accept=".pdf,.txt,.docx" onchange="handleJobDescFile(event)" title="Upload job description">
+                    <div id="jobFileName" class="file-name"></div>
+                </div>
+                <div>
+                    <label class="form-label">Or Paste Job Description</label>
+                    <textarea id="jobDescText" class="form-control" rows="4" placeholder="Paste the job description here..."></textarea>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <button class="btn btn-secondary" onclick="analyzeWithJobDesc()" title="Analyze resume based on job description">
+                    <i class="fas fa-sync"></i> Analyze with Job Description
+                </button>
+                <button class="btn btn-secondary" onclick="clearJobDesc()" title="Clear job description">
+                    <i class="fas fa-times"></i> Clear Job Description
+                </button>
+            </div>
+
+            <div id="jobDescIndicator" style="display: none; padding: 0.75rem; background: var(--color-bg-3); border-radius: var(--radius-base); color: #22c55e; font-size: 0.9rem;">
+                <i class="fas fa-check-circle"></i> <span id="jobDescStatus">Job description loaded</span>
+            </div>
+        </div>
+
+        <div id="resultsContainer" style="display: none;">
+            <div class="ats-results-section">
+                <!-- Overall Score Card -->
+                <div class="ats-score-card">
+                    <div class="score-display">
+                        <h3 class="score-label">Overall ATS Score</h3>
+                        <div id="overallScore" class="score-value good">0</div>
+                        <p id="scoreStatus" class="score-status">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Metrics Card -->
+                <div class="ats-score-card">
+                    <h3 class="score-label" style="text-align: center; margin-bottom: 1rem;">Key Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Format Score</div>
+                            <div id="formatScore" class="metric-value">0%</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Keyword Match</div>
+                            <div id="keywordScore" class="metric-value">0%</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Professionalism</div>
+                            <div id="proScore" class="metric-value">0%</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Sections Found</div>
+                            <div id="sectionsScore" class="metric-value">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Section -->
+                <div class="ats-score-card analysis-section">
+                    <div class="analysis-title">
+                        <i class="fas fa-chart-bar"></i> Detailed Analysis
+                    </div>
+
+                    <div class="analysis-tabs">
+                        <button class="tab-btn active" onclick="switchTab('strengths')">
+                            <i class="fas fa-check-circle"></i> Strengths
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('improvements')">
+                            <i class="fas fa-lightbulb"></i> Improvements
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('keywords')">
+                            <i class="fas fa-tag"></i> Keywords
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('sections')">
+                            <i class="fas fa-list"></i> Sections
+                        </button>
+                    </div>
+
+                    <div id="strengths" class="tab-content active" style="min-height: 200px;"></div>
+                    <div id="improvements" class="tab-content" style="min-height: 200px;"></div>
+                    <div id="keywords" class="tab-content" style="min-height: 200px;"></div>
+                    <div id="sections" class="tab-content" style="min-height: 200px;"></div>
+
+                    <div id="recommendationsDiv" class="recommendations" style="display: none;">
+                        <h4><i class="fas fa-star"></i> Top Recommendations to Improve Score</h4>
+                        <ol id="recommendationsList"></ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.min.js"></script>
+    <script src="ats-score-check.js"></script>
+</body>
+
+</html>
